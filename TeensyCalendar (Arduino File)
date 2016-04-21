@@ -1,0 +1,43 @@
+#include <Wire.h>
+#include <SPI.h>
+#include <ESP8266.h>
+#include <SparkFunLSM9DS1.h>
+#include <Adafruit_SSD1306.h>
+#include <Adafruit_GFX.h>
+
+// Wifi options, constants, and variables
+#define VERBOSE_WIFI true          // Verbose ESP8266 output
+#define IOT true
+#define IOT_UPDATE_INTERVAL 10000  // How often to send/pull from cloud (ms)
+#define SSID ""               // PUT SSID HERE
+#define PASSWORD ""         // PUT PASSWORD HERE
+const String KERBEROS = "";  // PUT KERBEROS HERE
+uint32_t tLastIotReq = 0;       // time of last send/pull
+uint32_t tLastIotResp = 0;      // time of last response
+String MAC = "";
+String resp = "";
+
+void setup(){
+  //Display setup. Need to figure out how to setup display for touchscreen
+  
+  //Wifi setup
+  if (IOT) {
+  wifi.begin();
+  display.clearDisplay();
+  display.setCursor(0,0);
+  display.println("Connecting to:");
+  display.println(SSID);
+  display.display();
+  wifi.connectWifi(SSID, PASSWORD);
+  while (!wifi.isConnected()); //wait for connection
+  MAC = wifi.getMAC();
+  display.clearDisplay();
+  display.setCursor(0,0);
+  display.println("Connected!!");
+  display.display();
+  delay(1000);
+  }
+}
+
+
+void loop(){
