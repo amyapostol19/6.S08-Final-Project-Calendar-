@@ -41,3 +41,89 @@ void setup(){
 
 
 void loop(){
+  //Gets response from the database
+  if (IOT && wifi.hasResponse()) {
+  resp = wifi.getResponse();
+  tLastIotResp = millis();
+  }
+  
+  //sends another get request to calendar.py after update interval is reached
+  if (IOT && (millis() - tLastIotReq >= IOT_UPDATE_INTERVAL)) {
+    if (wifi.isConnected() && !wifi.isBusy()) { //Check if we are able to send request
+      Serial.print("Sending request at t=");
+      Serial.println(millis());
+      
+      String domain = "//website in which we uploaded our calendar.py file";
+      int port = ?;
+      String path = "//path to website where we uploaded our calendar.py file";
+      String getParams = "//parameters for retreiving event information";
+      
+      wifi.sendRequest(GET, domain, port, path, getParams, true);
+      tLastIotReq = millis();
+      
+      unsigned long t = millis();
+      while(!wifi.hasResponse() && millis()-t<10000); //waits for response
+      String resp = "";
+      if (wifi.hasResponse()){
+        resp = wifi.getResponse();
+        Serial.print("Got response at t="); //prints results the the serial monitor used for debugging
+        Serial.println(millis());
+        Serial.printl(resp);
+        
+        //prints response to serial monitor in html format
+        int html1 = resp.indexOf
+        int html2 = resp.indexOf
+        String resp2 = resp.substring(html1,html2);
+        Serial.println(resp2);
+        
+        //reset display of touchscreen
+        }
+        
+        else{
+          Serial.println("No timely response");
+          resp = "Nothing"
+        }
+      }
+    }
+    
+  //post request  
+  if (IOT && (millis() - tLastIotReq >= IOT_UPDATE_INTERVAL)){
+    if (wifi.isConnected() && !wifi.isBusy()) { //checks if we are able to send post request. Tells us that we sent post request. Use serial monitor for debugging purposes
+      Serial.println("Starting POST request");
+      Serial.print("Sending request at t=");
+      Serial.println(millis());
+      
+      String domain = "//website where we uploaded calendar.py";
+      int port = ?;
+      String path = "//path to website where we uploaded calendar.py";
+      String getParams = "//information about the event";
+      
+      wifi.sendRequest(POST, domain, port, path, getParams, true);
+      tLastIotReq = millis();
+      Serial.println(getParams); // print to serial monitor to debug
+      
+      unsigned long t = millis();
+      while(!wifi.hasResponse() && millis()-t<10000); //waits to get response from wifi
+      String resp = "";
+      if (wifi.hasResponse()){
+        resp=wifi.getResponse();
+        Serial.print("Got response at t=");
+        Serial.println(millis());
+        Serial.println(resp);
+        
+        //display in html format
+        int html1 = resp.indexOf(
+        int html2 = resp.indexOf(
+        String resp2 = resp.substring(html1,html2);
+        Serial.println(resp2);
+        
+        //reset display on touchscreen
+        }
+        
+      else{
+        Serial.println("No timely response");
+        resp = "Nothing";
+        }
+    }
+  }
+}
