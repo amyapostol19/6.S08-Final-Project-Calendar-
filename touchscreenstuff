@@ -41,6 +41,7 @@ long first_time;
 long end_time;
 
 
+
 void setup() {
   // while(!Serial); //used for debugging
 
@@ -58,8 +59,6 @@ void setup() {
   delay(500);
 
   tft.fillScreen(ILI9341_BLUE);
-  tft.drawRect(210, 250, 220, 270, ILI9341_WHITE);
-  Serial.println("Rectangle drawn");
 
   yield();
 
@@ -71,14 +70,38 @@ void setup() {
 
   //draws keyboard picture
   bmpDraw("keyfour.bmp", 0, 0);
+  tft.fillRect(0, 0, 28, 90, ILI9341_RED);
+  Serial.println("Rectangle drawn");
+
 
   tft.setRotation(1);
-  tft.setCursor(265, 15);
+
+  tft.fillRect(268, 0, 55, 25, ILI9341_BLACK);
+  tft.drawRect(268, 0, 55, 25, ILI9341_WHITE);
+  tft.fillRect(268, 75, 55, 25, ILI9341_BLACK);
+  tft.drawRect(268, 75, 55, 25, ILI9341_WHITE);
+  tft.fillRect(268, 50, 55, 25, ILI9341_BLACK);
+  tft.drawRect(268, 50, 55, 25, ILI9341_WHITE);
+  tft.fillRect(268, 25, 55, 25, ILI9341_BLACK);
+  tft.drawRect(268, 25, 55, 25, ILI9341_WHITE);
+  
+  tft.setCursor(10, 222);
   tft.setTextSize(1);
   tft.setTextColor(ILI9341_WHITE);
-  tft.println("Enter");
+  tft.println("Record Event");
+  tft.setCursor(275, 5);
+  tft.println("Display");
+  tft.setCursor(275, 15);
+  tft.println("Mode");
+  tft.setCursor(275, 37);
+  tft.println("Name");
+  tft.setCursor(275, 62);
+  tft.println("Date");
+  tft.setCursor(270, 87);
+  tft.println("Location");
   tft.setCursor(0,0);
   tft.setTextSize(2);
+  tft.println("Touch 'Name' to start");
 }
 
 
@@ -277,33 +300,161 @@ void loop() {
     }
     dispCurrentLetters();
   }
+  else if (p.x > 50 && p.x < 85 && p.y >= 123 && p.y < 145){
+    event_name += "/";
+    dispCurrentLetters();
+  }
+
+  if (p.x > 265 && p.x < 290 && p.y > 190 && p.y < 245){
+    displayClearer("Touch 'Name' to start");
+    tft.fillRect(268, 25, 55, 25, ILI9341_GREEN);
+    tft.setTextSize(1);
+    tft.setCursor(275, 37);
+    tft.println("Name");
+  }
+    
+  if (p.x > 230 && p.x < 265 && p.y > 190 && p.y < 245){
+      tft.fillRect(268, 25, 55, 25, ILI9341_BLACK);
+      tft.drawRect(268, 25, 55, 25, ILI9341_WHITE);
+      tft.setTextSize(1);
+      tft.setCursor(275, 37);
+      tft.println("Name");
+      tft.fillRect(268, 50, 55, 25, ILI9341_GREEN);
+      tft.setCursor(275, 62);
+      tft.println("Date");
+      Serial.println(old_event);
+      displayClearer(old_event);
+      tft.println("Your event name is: ");
+      tft.println(event_name);
+      delay(3000);
+      tft.setTextColor(ILI9341_BLUE);
+      tft.setTextSize(2);
+      tft.setCursor(0,0);
+      tft.println("Your event name is: ");
+      tft.println(event_name);
+      tft.setTextColor(ILI9341_WHITE);
+      tft.setTextSize(2);
+      tft.setCursor(0,0);
+      tft.println("Name recorded. Date?");
+      delay(3000);
+      displayClearer("Name recorded. Date?");
+      old_event = event_name;
+      name_of_event += event_name;
+      event_name = "";
+      Serial.println(name_of_event);
+    }
+
+  if (p.x > 190 && p.x < 230 && p.y > 190 && p.y < 245){
+    tft.fillRect(268, 50, 55, 25, ILI9341_BLACK);
+    tft.drawRect(268, 50, 55, 25, ILI9341_WHITE);
+    tft.setTextSize(1);
+    tft.setCursor(275, 62);
+    tft.println("Date");
+    tft.fillRect(268, 75, 55, 25, ILI9341_GREEN);
+    tft.setCursor(270, 87);
+    tft.println("Location");
+    Serial.println(old_event);
+    displayClearer(old_event);
+    tft.println("Your event date is: ");
+    tft.println(event_name);
+    delay(3000);
+    tft.setTextColor(ILI9341_BLUE);
+    tft.setTextSize(2);
+    tft.setCursor(0,0);
+    tft.println("Your event date is: ");
+    tft.println(event_name);
+    tft.setTextColor(ILI9341_WHITE);
+    tft.setTextSize(2);
+    tft.setCursor(0,0);
+    tft.println("Date recorded. Location?");
+    delay(3000);
+    displayClearer("Date recorded. Location?");
+    old_event = event_name;
+    name_of_event += event_name;
+    event_name = "";
+    Serial.println(name_of_event);
+  }
   
   
 
   if (p.x < 50 && p.y < 65){
     Serial.println(old_event);
     displayClearer(old_event);
-    tft.println("Your event name is: ");
+    tft.println("Your event location is: ");
     tft.println(event_name);
     delay(3000);
     tft.setTextColor(ILI9341_BLUE);
     tft.setTextSize(2);
     tft.setCursor(0,0);
-    tft.println("Your event name is: ");
+    tft.println("Your event location is: ");
     tft.println(event_name);
     tft.setTextColor(ILI9341_WHITE);
     tft.setTextSize(2);
     tft.setCursor(0,0);
-    tft.println("Event recorded");
+    tft.println("Location recorded");
     delay(3000);
-    displayClearer("Event recorded");
-    name_of_event = event_name;
+    displayClearer("Location recorded");
     old_event = event_name;
+    name_of_event += event_name;
     event_name = "";
+    tft.println("Event information");
+    tft.println(name_of_event);
   }
   delay(250);
 
+  if (p.x > 290 && p.y > 190 && p.y < 245){
+    tft.fillScreen(ILI9341_BLUE); 
+    tft.fillRect(268, 0, 55, 25, ILI9341_BLACK);
+    tft.drawRect(268, 0, 55, 25, ILI9341_WHITE);
+    tft.setCursor(275, 5);
+    tft.setTextSize(1);
+    tft.println("Add");
+    tft.setCursor(275, 15);
+    tft.println("Event");
+    tft.setCursor(0,0);
+    tft.setTextSize(2);
+    tft.println(name_of_event);
+    if (p.x > 290 && p.y > 190 && p.y < 245){
+      Serial.println("Did it work?");
+      tft.setRotation(0);
+      bmpDraw("keyfour.bmp", 0, 0);
+      tft.fillRect(0, 0, 28, 90, ILI9341_RED);
+
+      tft.setRotation(1);
+    
+      tft.fillRect(268, 0, 55, 25, ILI9341_BLACK);
+      tft.drawRect(268, 0, 55, 25, ILI9341_WHITE);
+      tft.fillRect(268, 75, 55, 25, ILI9341_BLACK);
+      tft.drawRect(268, 75, 55, 25, ILI9341_WHITE);
+      tft.fillRect(268, 50, 55, 25, ILI9341_BLACK);
+      tft.drawRect(268, 50, 55, 25, ILI9341_WHITE);
+      tft.fillRect(268, 25, 55, 25, ILI9341_BLACK);
+      tft.drawRect(268, 25, 55, 25, ILI9341_WHITE);
+      
+      tft.setCursor(10, 222);
+      tft.setTextSize(1);
+      tft.setTextColor(ILI9341_WHITE);
+      tft.println("Record Event");
+      tft.setCursor(275, 5);
+      tft.println("Display");
+      tft.setCursor(275, 15);
+      tft.println("Mode");
+      tft.setCursor(275, 37);
+      tft.println("Name");
+      tft.setCursor(275, 62);
+      tft.println("Date");
+      tft.setCursor(270, 87);
+      tft.println("Location");
+      tft.setCursor(0,0);
+      tft.setTextSize(2);
+      tft.println("Touch 'Name' to start");
+    }
+  }
+
 }
+
+
+
 
 void dispCurrentLetters(){
     tft.setTextColor(ILI9341_BLUE);
