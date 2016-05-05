@@ -126,6 +126,9 @@ void setup() {
   tft.setCursor(0,0);
   tft.setTextSize(2);
   tft.println("Enter Name, Location and Time of Event. Touch 'Name' to start.");
+  tft.setCursor(297,190);
+  tft.println(":");
+  tft.setCursor(0,0);
   }
   else{
     Serial.print("display mode");
@@ -427,6 +430,9 @@ void loop() {
       tft.setCursor(0,0);
       tft.setTextSize(2);
       tft.println("Enter Name, Location and Time of Event. Touch 'Name' to start.");
+      tft.setCursor(297,190);
+      tft.println(":");
+      tft.setCursor(0,0);
     }
   
 
