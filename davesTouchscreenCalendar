@@ -371,6 +371,9 @@ void loop() {
 
   
   delay(250);
+  while(!ts.bufferEmpty()){
+      ts.getPoint();
+    }
 
 
   //user pushes the display mode button
