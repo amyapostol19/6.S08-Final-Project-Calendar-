@@ -35,6 +35,7 @@ Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC);
 #define BOXSIZE 40
 #define PENRADIUS 3
 int oldcolor, currentcolor;
+String origin = "";
 String event_name = "";
 String event_location = "";
 String event_time = "";
@@ -42,6 +43,7 @@ String event_info = "";
 String old_event = "";
 long first_time;
 long end_time;
+bool origin_touched = false;
 bool name_touched = false;
 bool location_touched = false;
 bool time_touched = false;
@@ -94,38 +96,47 @@ void setup() {
   if (add_event_mode){
   //draws keyboard picture
   bmpDraw("keyfour.bmp", 0, 0);
-  tft.fillRect(0, 0, 28, 90, ILI9341_RED);
+  tft.fillRect(0, 1, 28, 88, ILI9341_RED);
+  tft.drawRect(0, 1, 28, 88, ILI9341_WHITE);
   Serial.println("Rectangle drawn");
 
 
   tft.setRotation(1);
 
-  tft.fillRect(103, 75, 55, 25, ILI9341_BLACK);
-  tft.drawRect(103, 75, 55, 25, ILI9341_WHITE);
-  tft.fillRect(268, 75, 55, 25, ILI9341_BLACK);
-  tft.drawRect(268, 75, 55, 25, ILI9341_WHITE);
-  tft.fillRect(213, 75, 55, 25, ILI9341_BLACK);
-  tft.drawRect(213, 75, 55, 25, ILI9341_WHITE);
-  tft.fillRect(158, 75, 55, 25, ILI9341_BLACK);
-  tft.drawRect(158, 75, 55, 25, ILI9341_WHITE);
-  
+  tft.fillRect(0, 80, 55, 20, ILI9341_BLACK);
+  tft.drawRect(0, 80, 55, 20, ILI9341_WHITE);
+  tft.fillRect(55, 80, 55, 20, ILI9341_BLACK);
+  tft.drawRect(55, 80, 55, 20, ILI9341_WHITE);
+  tft.fillRect(158, 80, 55, 20, ILI9341_BLACK);
+  tft.drawRect(158, 80, 55, 20, ILI9341_WHITE);
+  tft.fillRect(213, 80, 55, 20, ILI9341_BLACK);
+  tft.drawRect(213, 80, 55, 20, ILI9341_WHITE);
+  tft.fillRect(268, 80, 55, 20, ILI9341_BLACK);
+  tft.drawRect(268, 80, 55, 20, ILI9341_WHITE);
+
+
   tft.setCursor(10, 222);
   tft.setTextSize(1);
   tft.setTextColor(ILI9341_WHITE);
   tft.println("Record Event");
-  tft.setCursor(105, 78);
+  tft.setCursor(3, 82);
   tft.println("Display");
-  tft.setCursor(105, 88);
+  tft.setCursor(3, 90);
   tft.println("Mode");
-  tft.setCursor(165, 85);
+  tft.setCursor(65, 85);
+  tft.println("Origin");
+  tft.setCursor(170, 85);
   tft.println("Name");
-  tft.setCursor(218, 85);
+  tft.setCursor(216, 85);
   tft.println("Location");
-  tft.setCursor(275, 85);
+  tft.setCursor(280, 85);
   tft.println("Time");
   tft.setCursor(0,0);
-  tft.setTextSize(2);
-  tft.println("Enter Name, Location and Time of Event. Touch 'Name' to start.");
+  tft.setTextSize(1);
+  tft.println("To log an event, touch Name to start. \nTo set current location for directions, touch Origin.");
+  tft.setCursor(297,190);
+  tft.println(":");
+  tft.setCursor(0,0);
   }
   else{
     Serial.print("display mode");
@@ -194,35 +205,100 @@ void loop() {
    //puts screen in add event mode
   if (add_event_mode){
 
-  //when the user pushes the "Name" button
-  if (p.x > 190 && p.x < 230 && p.y > 110 && p.y < 150){
-    displayClearer("Enter Name, Location and Time of Event. Touch 'Name' to start.");
-    tft.fillRect(158, 75, 55, 25, ILI9341_GREEN);
+  //when user pushes the "Origin" button
+  if (p.x > 190 && p.x < 230 && p.y > 40 && p.y < 80){
+    displayClearer("To log an event, touch Name to start. \nTo set current location for directions, touch Origin.", 1);
+    tft.setTextSize(2);
+    tft.println("Enter current location:");
+    tft.fillRect(55, 80, 55, 20, ILI9341_GREEN);
+    tft.drawRect(55, 80, 55, 20, ILI9341_WHITE);
     tft.setTextSize(1);
-    tft.setCursor(165, 85);
-    tft.println("Name");
-    name_touched = true;
+    tft.setCursor(65, 85);
+    tft.println("Origin");
+    tft.setTextSize(1);
+    tft.setCursor(10, 222);
+    tft.setTextColor(ILI9341_RED);
+    tft.println("Record Event");
+    tft.setCursor(6, 222);
+    tft.setTextColor(ILI9341_WHITE);
+    tft.println("Submit Origin");
+    tft.fillRect(158, 80, 55, 20, ILI9341_BLUE);
+    tft.fillRect(213, 80, 55, 20, ILI9341_BLUE);
+    tft.fillRect(268, 80, 55, 20, ILI9341_BLUE);
+    origin_touched = true;
+    
   }
 
-  if (name_touched){
-    getletters(p.x, p.y);
+  if (origin_touched){
+    getletters(p.x, p.y, 18);
   }
+
+  if (p.x < 50 && p.y < 65 && origin_touched){
+    tft.fillRect(268, 0, 55, 25, ILI9341_BLACK);
+    tft.drawRect(268, 0, 55, 25, ILI9341_WHITE);
+    tft.setCursor(275, 5);
+    tft.setTextSize(1);
+    tft.println("Back");
+    
+    origin += event_info;
+    event_info = "";
+    displayClearer("Enter current location:", 2); 
+    tft.setCursor(0,0);
+    tft.setTextSize(2);
+    tft.println("Your current location:");
+    delay(3000);
+    while(!ts.bufferEmpty()){
+      ts.getPoint();
+      }
+    origin_touched = false;
+  }
+
+  //when the user pushes the "Name" button
+  if (p.x > 190 && p.x < 230 && p.y > 110 && p.y < 150){
+    displayClearer("To log an event, touch Name to start. \nTo set current location for directions, touch Origin.", 1);
+    tft.fillRect(158, 80, 55, 20, ILI9341_GREEN);
+    tft.drawRect(158, 80, 55, 20, ILI9341_WHITE);
+    tft.setCursor(165, 85);
+    tft.setTextSize(1);
+    tft.println("Name");
+    
+    while(!ts.bufferEmpty()){
+       ts.getPoint();
+       }
+    tft.setTextColor(ILI9341_WHITE);
+    tft.setTextSize(2);
+    tft.setCursor(0,0);
+    tft.println("Event name?");
+    tft.setCursor(0,10);
+    old_event = event_info;
+    event_info = "";
+    Serial.println(origin);
+    name_touched = true;
+    
+  }
+
+  if(name_touched){
+    getletters(p.x, p.y, 18);
+  }
+  
 
   //when user pushes the "Location" button
   if (name_touched){
     if (p.x > 190 && p.x < 230 && p.y > 150 && p.y < 190){
-        tft.fillRect(158, 75, 55, 25, ILI9341_BLACK);
-        tft.drawRect(158, 75, 55, 25, ILI9341_WHITE);
+        displayClearer("Event Name?", 2);
+        event_name += event_info; 
+        event_info = "";
+        tft.fillRect(158, 80, 55, 20, ILI9341_BLACK);
+        tft.drawRect(158, 80, 55, 20, ILI9341_WHITE);
         tft.setTextSize(1);
         tft.setCursor(165, 85);
         tft.println("Name");
-        tft.fillRect(213, 75, 55, 25, ILI9341_GREEN);
+        tft.fillRect(213, 80, 55, 20, ILI9341_GREEN);
+        tft.drawRect(213, 80, 55, 20, ILI9341_WHITE);
         tft.setCursor(218, 85);
         tft.println("Location");
-        Serial.println(old_event);
-        displayClearer(old_event);
         tft.println("Your event name is: ");
-        tft.println(event_info);
+        tft.println(event_name);
         delay(3000);
         while(!ts.bufferEmpty()){
             ts.getPoint();
@@ -231,34 +307,36 @@ void loop() {
         tft.setTextSize(2);
         tft.setCursor(0,0);
         tft.println("Your event name is: ");
-        tft.println(event_info);
+        tft.println(event_name);
+        
         tft.setTextColor(ILI9341_WHITE);
         tft.setTextSize(2);
         tft.setCursor(0,0);
         tft.println("Name recorded. Location?");
         delay(3000);
-        displayClearer("Name recorded. Location?");
-        old_event = event_info;
-        event_name += event_info;
-        event_info = "";
-        Serial.println(event_name);
+        while(!ts.bufferEmpty()){
+            ts.getPoint();
+          }
         location_touched = true;
+      }
+      
+      if(location_touched){
+          getletters(p.x, p.y, 18);
       }
     }
 
   //when user pushes the "Time" Button
   if (name_touched && location_touched){
     if (p.x > 190 && p.x < 230 && p.y > 190 && p.y < 245){
-      tft.fillRect(213, 75, 55, 25, ILI9341_BLACK);
-      tft.drawRect(213, 75, 55, 25, ILI9341_WHITE);
+      tft.fillRect(213, 80, 55, 20, ILI9341_BLACK);
+      tft.drawRect(213, 80, 55, 20, ILI9341_WHITE);
       tft.setTextSize(1);
       tft.setCursor(218, 85);
       tft.println("Location");
-      tft.fillRect(268, 75, 55, 25, ILI9341_GREEN);
+      tft.fillRect(268, 80, 55, 20, ILI9341_GREEN);
+      tft.drawRect(268, 80, 55, 20, ILI9341_WHITE);
       tft.setCursor(275, 85);
       tft.println("Time");
-      Serial.println(old_event);
-      displayClearer(old_event);
       tft.println("Your event location is: ");
       tft.println(event_info);
       delay(3000);
@@ -273,9 +351,12 @@ void loop() {
       tft.setTextColor(ILI9341_WHITE);
       tft.setTextSize(2);
       tft.setCursor(0,0);
-      tft.println("Location recorded. Date and Time?");
-      delay(3000);
-      displayClearer("Location recorded. Date and Time?");
+      tft.println("Location recorded. Date and Time? (YYYY-MM-DD hh:mm:ss)");
+      delay(4000);
+      while(!ts.bufferEmpty()){
+          ts.getPoint();
+        }
+      displayClearer("Location recorded. Date and Time? (YYYY-MM-DD hh:mm:ss)", 2);
       old_event = event_info;
       event_location += event_info;
       event_info = "";
@@ -286,15 +367,15 @@ void loop() {
   
   
   //when user pushes the "Record Event" button
-  if (name_touched && location_touched && time_touched){
+  if (origin_touched && name_touched && location_touched && time_touched){
     if (p.x < 50 && p.y < 65){
-      tft.fillRect(268, 75, 55, 25, ILI9341_BLACK);
-      tft.drawRect(268, 75, 55, 25, ILI9341_WHITE);
+      tft.fillRect(268, 80, 55, 20, ILI9341_BLACK);
+      tft.drawRect(268, 80, 55, 20, ILI9341_WHITE);
       tft.setCursor(275, 85);
       tft.setTextSize(1);
       tft.println("Time");
       Serial.println(old_event);
-      displayClearer(old_event);
+      displayClearer(old_event, 2);
       tft.println("Your event time is: ");
       tft.println(event_info);
       delay(3000);
@@ -314,7 +395,7 @@ void loop() {
       while(!ts.bufferEmpty()){
             ts.getPoint();
           }
-      displayClearer("Date and Time recorded");
+      displayClearer("Date and Time recorded", 2);
       old_event = event_info;
       event_time += event_info;
       event_info = "";
@@ -373,11 +454,11 @@ void loop() {
   delay(250);
   while(!ts.bufferEmpty()){
       ts.getPoint();
-    }
+     }
 
 
   //user pushes the display mode button
-  if (p.x > 190 && p.x < 230 && p.y > 70 && p.y < 110){
+  if (p.x > 190 && p.x < 230 && p.y > 0 && p.y < 40){
     tft.fillScreen(ILI9341_BLUE); 
     tft.fillRect(268, 0, 55, 25, ILI9341_BLACK);
     tft.drawRect(268, 0, 55, 25, ILI9341_WHITE);
@@ -399,38 +480,45 @@ void loop() {
       Serial.println("Did it work?");
       tft.setRotation(0);
       bmpDraw("keyfour.bmp", 0, 0);
+      tft.drawRect(0, 0, 28, 90, ILI9341_WHITE);
       tft.fillRect(0, 0, 28, 90, ILI9341_RED);
 
       tft.setRotation(1);
-      
-      tft.fillRect(268, 0, 55, 25, ILI9341_BLUE);
-      tft.drawRect(268, 0, 55, 25, ILI9341_BLUE);
-      tft.fillRect(103, 75, 55, 25, ILI9341_BLACK);
-      tft.drawRect(103, 75, 55, 25, ILI9341_WHITE);
-      tft.fillRect(158, 75, 55, 25, ILI9341_BLACK);
-      tft.drawRect(158, 75, 55, 25, ILI9341_WHITE);
-      tft.fillRect(213, 75, 55, 25, ILI9341_BLACK);
-      tft.drawRect(213, 75, 55, 25, ILI9341_WHITE);
-      tft.fillRect(268, 75, 55, 25, ILI9341_BLACK);
-      tft.drawRect(268, 75, 55, 25, ILI9341_WHITE);
-          
+
+      tft.fillRect(0, 80, 55, 20, ILI9341_BLACK);
+      tft.drawRect(0, 80, 55, 20, ILI9341_WHITE);
+      tft.fillRect(55, 80, 55, 20, ILI9341_BLACK);
+      tft.drawRect(55, 80, 55, 20, ILI9341_WHITE);
+      tft.fillRect(158, 80, 55, 20, ILI9341_BLACK);
+      tft.drawRect(158, 80, 55, 20, ILI9341_WHITE);
+      tft.fillRect(213, 80, 55, 20, ILI9341_BLACK);
+      tft.drawRect(213, 80, 55, 20, ILI9341_WHITE);
+      tft.fillRect(268, 80, 55, 20, ILI9341_BLACK);
+      tft.drawRect(268, 80, 55, 20, ILI9341_WHITE);
+    
+    
       tft.setCursor(10, 222);
       tft.setTextSize(1);
       tft.setTextColor(ILI9341_WHITE);
       tft.println("Record Event");
-      tft.setCursor(105, 78);
+      tft.setCursor(3, 82);
       tft.println("Display");
-      tft.setCursor(105, 88);
+      tft.setCursor(3, 90);
       tft.println("Mode");
-      tft.setCursor(165, 85);
+      tft.setCursor(65, 85);
+      tft.println("Origin");
+      tft.setCursor(170, 85);
       tft.println("Name");
-      tft.setCursor(218, 85);
+      tft.setCursor(216, 85);
       tft.println("Location");
-      tft.setCursor(275, 85);
+      tft.setCursor(280, 85);
       tft.println("Time");
       tft.setCursor(0,0);
-      tft.setTextSize(2);
-      tft.println("Enter Name, Location and Time of Event. Touch 'Name' to start.");
+      tft.setTextSize(1);
+      tft.println("To log an event, touch Name to start. \nTo set current location for directions, touch Origin.");
+      tft.setCursor(297,190);
+      tft.println(":");
+      tft.setCursor(0,0);
     }
   
 
@@ -450,8 +538,9 @@ void loop() {
       String domain = "iesc-s2.mit.edu";
       int port = 80;
       String path = "/student_code/" + KERBEROS + "/dev1/sb2.py";
+      String getParams = "origin="+origin;
       
-      wifi.sendRequest(GET, domain, port, path, true);
+      wifi.sendRequest(GET, domain, port, path, getParams, true);
       tLastIotReq = millis();
 
       unsigned long t = millis();
@@ -462,10 +551,12 @@ void loop() {
         Serial.print("Got response at t=");
         Serial.println(millis());
         Serial.println(resp);
+        Serial.println("I got a response");
         
         int html1 = resp.indexOf("<html>")+6;
         int html2 = resp.indexOf("</html>");
         String resp2 = resp.substring(html1, html2);
+        Serial.println(resp2);
         tft.setCursor(0,20);
         tft.setTextSize(1);
         tft.println(resp2);
@@ -484,198 +575,198 @@ void loop() {
 }
 
 
-void getletters(int x, int y){
+void getletters(int x, int y, int z){
   //print letters to the Serial monitor
   if (x > 155 && x < 190 && y < 23){
     event_info += "1";
-    dispCurrentLetters(); 
+    dispCurrentLetters(z); 
   }
   else if (x > 155 && x < 190 && y >= 23 && y < 40){
     event_info += "2";
-    dispCurrentLetters(); 
+    dispCurrentLetters(z); 
   }
   else if (x > 155 && x < 190 && y >= 40 && y < 57){
     event_info += "3";
-    dispCurrentLetters();
+    dispCurrentLetters(z); 
   }
   else if (x > 155 && x < 190 && y >= 57 && y < 77){
     event_info += "4";
-    dispCurrentLetters();
+    dispCurrentLetters(z); 
   }
   else if (x > 155 && x < 190 && y >= 77 && y < 97){
     event_info += "5";
-    dispCurrentLetters();
+    dispCurrentLetters(z); 
   }
   else if (x > 155 && x < 190 && y >= 97 && y < 123){
     event_info += "6";
-    dispCurrentLetters();
+    dispCurrentLetters(z); 
   }
   else if (x > 155 && x < 190 && y >= 123 && y < 145){
     event_info += "7";
-    dispCurrentLetters();
+    dispCurrentLetters(z); 
   }
   else if (x > 155 && x < 190 && y >= 145 && y < 165){
     event_info += "8";
-    dispCurrentLetters();
+    dispCurrentLetters(z); 
   }
   else if (x > 155 && x < 190 && y >= 165 && y < 187){
     event_info += "9";
-    dispCurrentLetters();
+    dispCurrentLetters(z); 
   }
   else if (x > 155 && x < 190 && y >= 187 && y < 205){
     event_info += "0";
-    dispCurrentLetters();
+    dispCurrentLetters(z); 
   }
   else if (x > 125 && x < 155 && y < 23){
     event_info += "a";
-    dispCurrentLetters();
+    dispCurrentLetters(z); 
   }
   else if (x > 125 && x < 155 && y >= 23 && y < 40){
     event_info += "b";
-    dispCurrentLetters();
+    dispCurrentLetters(z); 
   }
   else if (x > 125 && x < 155 && y >= 40 && y < 57){
     event_info += "c";
-    dispCurrentLetters();
+    dispCurrentLetters(z); 
   }
   else if (x > 125 && x < 155 && y >= 57 && y < 77){
     event_info += "d";
-    dispCurrentLetters();
+    dispCurrentLetters(z); 
   }
   else if (x > 125 && x < 155 && y >= 77 && y < 97){
     event_info += "e";
-    dispCurrentLetters();
+    dispCurrentLetters(z); 
   }
   else if (x > 125 && x < 155 && y >= 97 && y < 123){
     event_info += "f";
-    dispCurrentLetters();
+    dispCurrentLetters(z); 
   }
   else if (x > 125 && x < 155 && y >= 123 && y < 145){
     event_info += "g";
-    dispCurrentLetters();
+    dispCurrentLetters(z); 
   }
   else if (x > 125 && x < 155 && y >= 145 && y < 165){
     event_info += "h";
-    dispCurrentLetters();
+    dispCurrentLetters(z); 
   }
   else if (x > 125 && x < 155 && y >= 165 && y < 187){
     event_info += "i";
-    dispCurrentLetters();
+    dispCurrentLetters(z); 
   }
   else if (x > 125 && x < 155 && y >= 187 && y < 205){
     event_info += "j";
-    dispCurrentLetters();
+    dispCurrentLetters(z); 
   }
   else if (x > 125 && x < 155 && y >= 205){
     event_info += "k";
-    dispCurrentLetters();
+    dispCurrentLetters(z); 
   }
   else if (x > 85 && x < 125 && y < 23){
     event_info += "l";
-    dispCurrentLetters();
+    dispCurrentLetters(z); 
   }
   else if (x > 85 && x < 125 && y >= 23 && y < 40){
     event_info += "m";
-    dispCurrentLetters();
+    dispCurrentLetters(z); 
   }
   else if (x > 85 && x < 125 && y >= 40 && y < 57){
     event_info += "n";
-    dispCurrentLetters();
+    dispCurrentLetters(z); 
   }
   else if (x > 85 && x < 125 && y >= 57 && y < 77){
     event_info += "o";
-    dispCurrentLetters();
+    dispCurrentLetters(z); 
   }
   else if (x > 85 && x < 125 && y >= 77 && y < 97){
     event_info += "p";
-    dispCurrentLetters();
+    dispCurrentLetters(z); 
   }
   else if (x > 85 && x < 125 && y >= 97 && y < 123){
     event_info += "q";
-    dispCurrentLetters();
+    dispCurrentLetters(z); 
   }
   else if (x > 85 && x < 125 && y >= 123 && y < 145){
     event_info += "r";
-    dispCurrentLetters();
+    dispCurrentLetters(z); 
   }
   else if (x > 85 && x < 125 && y >= 145 && y < 165){
     event_info += "s";
-    dispCurrentLetters();
+    dispCurrentLetters(z); 
   }
   else if (x > 85 && x < 125 && y >= 165 && y < 187){
     event_info += "t";
-    dispCurrentLetters();
+    dispCurrentLetters(z); 
   }
   else if (x > 85 && x < 125 && y >= 187 && y < 205){
     event_info += "u";
-    dispCurrentLetters();
+    dispCurrentLetters(z); 
   }
   else if (x > 85 && x < 125 && y >= 205){
     event_info += "v";
-    dispCurrentLetters();
+    dispCurrentLetters(z); 
   }
   else if (x > 50 && x < 85 && y < 23){
     event_info += "w";
-    dispCurrentLetters();
+    dispCurrentLetters(z); 
   }
   else if (x > 50 && x < 85 && y >= 23 && y < 40){
     event_info += "x";
-    dispCurrentLetters();
+    dispCurrentLetters(z); 
   }
   else if (x > 50 && x < 85 && y >= 40 && y < 57){
     event_info += "y";
-    dispCurrentLetters();
+    dispCurrentLetters(z); 
   }
   else if (x > 50 && x < 85 && y >= 57 && y < 77){
     event_info += "z";
-    dispCurrentLetters();
+    dispCurrentLetters(z); 
   }
   else if (x < 50 && y >= 65 && y < 160){
     event_info += " ";
-    dispCurrentLetters();
+    dispCurrentLetters(z); 
   }
   else if (x < 50 && y >= 160){
     if (event_info != ""){
     event_info = event_info.substring(0, event_info.length()-1);
     }
-    dispCurrentLetters();
+    dispCurrentLetters(z); 
   }
   else if (x > 50 && x < 85 && y >= 123 && y < 145){
     event_info += "/";
-    dispCurrentLetters();
+    dispCurrentLetters(z); 
   }
   else if (x > 50 && x < 85 && y >= 187 && y < 205){
     event_info += "-";
-    dispCurrentLetters();
+    dispCurrentLetters(z); 
   }
   else if (x > 50 && x < 85 && y >= 205){
     event_info += ":";
-    dispCurrentLetters();
+    dispCurrentLetters(z); 
   }
 }
 
 
 
-void dispCurrentLetters(){
+void dispCurrentLetters(int x){
     tft.setTextColor(ILI9341_BLUE);
     tft.setTextSize(2);
-    tft.setCursor(0,0);
+    tft.setCursor(0,x);
     tft.println(old_event);
     Serial.println(event_info);
     tft.setTextColor(ILI9341_WHITE);
     tft.setTextSize(2);
-    tft.setCursor(0, 0);
+    tft.setCursor(0, x);
     tft.println(event_info);
     old_event = event_info; 
 }
 
-void displayClearer(String old_text){
+void displayClearer(String old_text, int fontsize){
   tft.setTextColor(ILI9341_BLUE);
-  tft.setTextSize(2);
+  tft.setTextSize(fontsize);
   tft.setCursor(0,0);
   tft.println(old_text);
   tft.setTextColor(ILI9341_WHITE);
-  tft.setTextSize(2);
+  tft.setTextSize(fontsize);
   tft.setCursor(0,0);
 }
   
