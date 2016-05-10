@@ -9,7 +9,7 @@
 #include <SparkFunLSM9DS1.h>
 #include <Adafruit_SSD1306.h>
 
-//all the colors
+//all the colors (GFX library was giving me some trouble)
 #define ILI9341_BLACK       0x0000      /*   0,   0,   0 */
 #define ILI9341_NAVY        0x000F      /*   0,   0, 128 */
 #define ILI9341_DARKGREEN   0x03E0      /*   0, 128,   0 */
@@ -74,6 +74,7 @@ bool location_touched = false;
 bool time_touched = false;
 bool add_event_mode = true;
 bool display_mode = false;
+bool displaymodeReady = false;
 
 // Wifi options, constants, and variables
 #define VERBOSE_WIFI true          // Verbose ESP8266 output
@@ -171,13 +172,40 @@ void setup() {
 
   // Wifi setup
   if (IOT) {
+    
     wifi.begin();
-    Serial.println("Connecting to:");
-    Serial.println(SSID);
+    
     wifi.connectWifi(SSID, PASSWORD);
-    while (!wifi.isConnected()); //wait for connection
+    while (!wifi.isConnected()){
+      tft.setTextSize(1);
+      tft.println("\n\n\nConnecting.");
+      delay(500);
+      while(!ts.bufferEmpty()){
+        ts.getPoint();
+       }
+      displayClearer("\n\n\nConnecting.", 1);
+      tft.println("\n\n\nConnecting..");
+      delay(500);
+      while(!ts.bufferEmpty()){
+        ts.getPoint();
+       }
+      displayClearer("\n\n\nConnecting..", 1);
+      tft.println("\n\n\nConnecting...");
+      delay(500);
+      while(!ts.bufferEmpty()){
+        ts.getPoint();
+       }
+       displayClearer("\n\n\nConnecting...", 1); //wait for connection
+    }
+    
     MAC = wifi.getMAC();
-    Serial.println("Connected!!");
+    tft.println("\n\n\nConnected!!");
+    delay(2000);
+    while(!ts.bufferEmpty()){
+      ts.getPoint();
+     }
+     
+    displayClearer(" \n\n\nConnected!!", 1);
   }
 
 }
@@ -262,6 +290,7 @@ void loop() {
     tft.fillRect(268, 80, 55, 20, ILI9341_BLUE);
    
     origin_touched = true;
+    displaymodeReady = true;
     
   }
 
@@ -510,6 +539,7 @@ void loop() {
       dispCurrentLetters(34);
 
       tft.setCursor(0,0);
+      tft.setTextSize(1);
       tft.println("Event Information");
       tft.print("Event Name: ");
       tft.println(event_name);
@@ -569,7 +599,10 @@ void loop() {
       }
       }
     }
-      
+    char_string = "";
+    event_name = "";
+    event_location = "";
+    event_time = "";  
     }
   }
     
@@ -578,38 +611,40 @@ void loop() {
 
 
   //user pushes the display mode button
-  if (p.x > 190 && p.x < 230 && p.y > 0 && p.y < 40){
-    tft.fillRect(0, 80, 55, 20, ILI9341_DARKGREEN);
-    tft.drawRect(0, 80, 55, 20, ILI9341_WHITE);
-    tft.setTextSize(1);
-    tft.setCursor(3, 82);
-    tft.println("Display");
-    tft.setCursor(3, 90);
-    tft.println("Mode");
-    delay(150);
-    while(!ts.bufferEmpty()){
-      ts.getPoint();
-     }
-     tft.fillRect(0, 80, 55, 20, ILI9341_BLACK);
-     tft.drawRect(0, 80, 55, 20, ILI9341_WHITE);
-     tft.setTextSize(1);
-     tft.setCursor(3, 82);
-     tft.println("Display");
-     tft.setCursor(3, 90);
-     tft.println("Mode");
-     delay(100);
-     while(!ts.bufferEmpty()){        
-      ts.getPoint();
-     }
-    tft.fillScreen(ILI9341_BLUE); 
-    tft.fillRect(268, 0, 55, 25, ILI9341_BLACK);
-    tft.drawRect(268, 0, 55, 25, ILI9341_WHITE);
-    tft.setCursor(275, 5);
-    tft.setTextSize(1);
-    tft.println("Close");
-    
-    add_event_mode = false;
-    display_mode = true;
+  if(displaymodeReady){
+    if (p.x > 190 && p.x < 230 && p.y > 0 && p.y < 40){
+      tft.fillRect(0, 80, 55, 20, ILI9341_DARKGREEN);
+      tft.drawRect(0, 80, 55, 20, ILI9341_WHITE);
+      tft.setTextSize(1);
+      tft.setCursor(3, 82);
+      tft.println("Display");
+      tft.setCursor(3, 90);
+      tft.println("Mode");
+      delay(150);
+      while(!ts.bufferEmpty()){
+        ts.getPoint();
+       }
+       tft.fillRect(0, 80, 55, 20, ILI9341_BLACK);
+       tft.drawRect(0, 80, 55, 20, ILI9341_WHITE);
+       tft.setTextSize(1);
+       tft.setCursor(3, 82);
+       tft.println("Display");
+       tft.setCursor(3, 90);
+       tft.println("Mode");
+       delay(100);
+       while(!ts.bufferEmpty()){        
+        ts.getPoint();
+       }
+      tft.fillScreen(ILI9341_BLUE); 
+      tft.fillRect(268, 0, 55, 25, ILI9341_BLACK);
+      tft.drawRect(268, 0, 55, 25, ILI9341_WHITE);
+      tft.setCursor(275, 5);
+      tft.setTextSize(1);
+      tft.println("Close");
+      
+      add_event_mode = false;
+      display_mode = true;
+    }
   }
     //the user goes back to add event mode
     if (p.x > 290 && p.y > 190 && p.y < 245){
@@ -709,12 +744,10 @@ void loop() {
         Serial.print("Got response at t=");
         Serial.println(millis());
         Serial.println(resp);
-        Serial.println("I got a response");
         
         int html1 = resp.indexOf("<html>")+6;
         int html2 = resp.indexOf("</html>");
         String resp2 = resp.substring(html1, html2);
-        Serial.println(resp2);
 
         //indices for highlighting substrings of key info
         int timeIndex1 = resp2.indexOf("take you about")+14;
@@ -734,17 +767,19 @@ void loop() {
           tft.setTextColor(ILI9341_GREEN);
           tft.print(time_till);
           tft.setTextColor(ILI9341_WHITE);        
-          tft.print(resp2.substring(timeIndex2, nameIndex1));
+          tft.println(resp2.substring(timeIndex2, nameIndex1));
           tft.setTextColor(ILI9341_GREEN);
-          tft.print(resp2.substring(nameIndex1, nameIndex2));
+          tft.print(resp2.substring(nameIndex1+1, nameIndex2));
           tft.setTextColor(ILI9341_WHITE);        
           tft.print(resp2.substring(nameIndex2, locIndex1));
           tft.setTextColor(ILI9341_GREEN);
           tft.print(resp2.substring(locIndex1, locIndex2));
           tft.setTextColor(ILI9341_WHITE);        
-          tft.print(resp2.substring(locIndex2, dirIndex1));
+          tft.println(resp2.substring(locIndex2, locIndex2+1));
+          tft.println(resp2.substring(locIndex2+2, dirIndex1));
           tft.setTextColor(ILI9341_GREEN);        
-          tft.print(resp2.substring(dirIndex1, dirIndex2));
+          tft.println(resp2.substring(dirIndex1, dirIndex2));
+          tft.println("-----------------------------------------------------");
           tft.setTextColor(ILI9341_WHITE);
           tft.print(resp2.substring(dirIndex2, -1));
         }
@@ -808,110 +843,6 @@ void getletters(int x, int y, int yCursor){
     char_string += "0";
     dispCurrentLetters(yCursor); 
   }
-  else if (x > 125 && x < 155 && y < 23){
-    char_string += "a";
-    dispCurrentLetters(yCursor); 
-  }
-  else if (x > 125 && x < 155 && y >= 23 && y < 40){
-    char_string += "b";
-    dispCurrentLetters(yCursor); 
-  }
-  else if (x > 125 && x < 155 && y >= 40 && y < 57){
-    char_string += "c";
-    dispCurrentLetters(yCursor); 
-  }
-  else if (x > 125 && x < 155 && y >= 57 && y < 77){
-    char_string += "d";
-    dispCurrentLetters(yCursor); 
-  }
-  else if (x > 125 && x < 155 && y >= 77 && y < 97){
-    char_string += "e";
-    dispCurrentLetters(yCursor); 
-  }
-  else if (x > 125 && x < 155 && y >= 97 && y < 123){
-    char_string += "f";
-    dispCurrentLetters(yCursor); 
-  }
-  else if (x > 125 && x < 155 && y >= 123 && y < 145){
-    char_string += "g";
-    dispCurrentLetters(yCursor); 
-  }
-  else if (x > 125 && x < 155 && y >= 145 && y < 165){
-    char_string += "h";
-    dispCurrentLetters(yCursor); 
-  }
-  else if (x > 125 && x < 155 && y >= 165 && y < 187){
-    char_string += "i";
-    dispCurrentLetters(yCursor); 
-  }
-  else if (x > 125 && x < 155 && y >= 187 && y < 205){
-    char_string += "j";
-    dispCurrentLetters(yCursor); 
-  }
-  else if (x > 125 && x < 155 && y >= 205){
-    char_string += "k";
-    dispCurrentLetters(yCursor); 
-  }
-  else if (x > 85 && x < 125 && y < 23){
-    char_string += "l";
-    dispCurrentLetters(yCursor); 
-  }
-  else if (x > 85 && x < 125 && y >= 23 && y < 40){
-    char_string += "m";
-    dispCurrentLetters(yCursor); 
-  }
-  else if (x > 85 && x < 125 && y >= 40 && y < 57){
-    char_string += "n";
-    dispCurrentLetters(yCursor); 
-  }
-  else if (x > 85 && x < 125 && y >= 57 && y < 77){
-    char_string += "o";
-    dispCurrentLetters(yCursor); 
-  }
-  else if (x > 85 && x < 125 && y >= 77 && y < 97){
-    char_string += "p";
-    dispCurrentLetters(yCursor); 
-  }
-  else if (x > 85 && x < 125 && y >= 97 && y < 123){
-    char_string += "q";
-    dispCurrentLetters(yCursor); 
-  }
-  else if (x > 85 && x < 125 && y >= 123 && y < 145){
-    char_string += "r";
-    dispCurrentLetters(yCursor); 
-  }
-  else if (x > 85 && x < 125 && y >= 145 && y < 165){
-    char_string += "s";
-    dispCurrentLetters(yCursor); 
-  }
-  else if (x > 85 && x < 125 && y >= 165 && y < 187){
-    char_string += "t";
-    dispCurrentLetters(yCursor); 
-  }
-  else if (x > 85 && x < 125 && y >= 187 && y < 205){
-    char_string += "u";
-    dispCurrentLetters(yCursor); 
-  }
-  else if (x > 85 && x < 125 && y >= 205){
-    char_string += "v";
-    dispCurrentLetters(yCursor); 
-  }
-  else if (x > 50 && x < 85 && y < 23){
-    char_string += "w";
-    dispCurrentLetters(yCursor); 
-  }
-  else if (x > 50 && x < 85 && y >= 23 && y < 40){
-    char_string += "x";
-    dispCurrentLetters(yCursor); 
-  }
-  else if (x > 50 && x < 85 && y >= 40 && y < 57){
-    char_string += "y";
-    dispCurrentLetters(yCursor); 
-  }
-  else if (x > 50 && x < 85 && y >= 57 && y < 77){
-    char_string += "z";
-    dispCurrentLetters(yCursor); 
-  }
   else if (x < 50 && y >= 65 && y < 160){
     char_string += " ";
     dispCurrentLetters(yCursor); 
@@ -934,6 +865,221 @@ void getletters(int x, int y, int yCursor){
     char_string += ":";
     dispCurrentLetters(yCursor); 
   }
+
+  else if (char_string == "" || char_string.endsWith(" ")){
+    if (x > 125 && x < 155 && y < 23){
+      char_string += "A";
+      dispCurrentLetters(yCursor); 
+    }
+    else if (x > 125 && x < 155 && y >= 23 && y < 40){
+      char_string += "B";
+      dispCurrentLetters(yCursor); 
+    }
+    else if (x > 125 && x < 155 && y >= 40 && y < 57){
+      char_string += "C";
+      dispCurrentLetters(yCursor); 
+    }
+    else if (x > 125 && x < 155 && y >= 57 && y < 77){
+      char_string += "D";
+      dispCurrentLetters(yCursor); 
+    }
+    else if (x > 125 && x < 155 && y >= 77 && y < 97){
+      char_string += "E";
+      dispCurrentLetters(yCursor); 
+    }
+    else if (x > 125 && x < 155 && y >= 97 && y < 123){
+      char_string += "F";
+      dispCurrentLetters(yCursor); 
+    }
+    else if (x > 125 && x < 155 && y >= 123 && y < 145){
+      char_string += "G";
+      dispCurrentLetters(yCursor); 
+    }
+    else if (x > 125 && x < 155 && y >= 145 && y < 165){
+      char_string += "H";
+      dispCurrentLetters(yCursor); 
+    }
+    else if (x > 125 && x < 155 && y >= 165 && y < 187){
+      char_string += "I";
+      dispCurrentLetters(yCursor); 
+    }
+    else if (x > 125 && x < 155 && y >= 187 && y < 205){
+      char_string += "J";
+      dispCurrentLetters(yCursor); 
+    }
+    else if (x > 125 && x < 155 && y >= 205){
+      char_string += "K";
+      dispCurrentLetters(yCursor); 
+    }
+    else if (x > 85 && x < 125 && y < 23){
+      char_string += "L";
+      dispCurrentLetters(yCursor); 
+    }
+    else if (x > 85 && x < 125 && y >= 23 && y < 40){
+      char_string += "M";
+      dispCurrentLetters(yCursor); 
+    }
+    else if (x > 85 && x < 125 && y >= 40 && y < 57){
+      char_string += "N";
+      dispCurrentLetters(yCursor); 
+    }
+    else if (x > 85 && x < 125 && y >= 57 && y < 77){
+      char_string += "O";
+      dispCurrentLetters(yCursor); 
+    }
+    else if (x > 85 && x < 125 && y >= 77 && y < 97){
+      char_string += "P";
+      dispCurrentLetters(yCursor); 
+    }
+    else if (x > 85 && x < 125 && y >= 97 && y < 123){
+      char_string += "Q";
+      dispCurrentLetters(yCursor); 
+    }
+    else if (x > 85 && x < 125 && y >= 123 && y < 145){
+      char_string += "R";
+      dispCurrentLetters(yCursor); 
+    }
+    else if (x > 85 && x < 125 && y >= 145 && y < 165){
+      char_string += "S";
+      dispCurrentLetters(yCursor); 
+    }
+    else if (x > 85 && x < 125 && y >= 165 && y < 187){
+      char_string += "T";
+      dispCurrentLetters(yCursor); 
+    }
+    else if (x > 85 && x < 125 && y >= 187 && y < 205){
+      char_string += "U";
+      dispCurrentLetters(yCursor); 
+    }
+    else if (x > 85 && x < 125 && y >= 205){
+      char_string += "V";
+      dispCurrentLetters(yCursor); 
+    }
+    else if (x > 50 && x < 85 && y < 23){
+      char_string += "W";
+      dispCurrentLetters(yCursor); 
+    }
+    else if (x > 50 && x < 85 && y >= 23 && y < 40){
+      char_string += "X";
+      dispCurrentLetters(yCursor); 
+    }
+    else if (x > 50 && x < 85 && y >= 40 && y < 57){
+      char_string += "Y";
+      dispCurrentLetters(yCursor); 
+    }
+    else if (x > 50 && x < 85 && y >= 57 && y < 77){
+      char_string += "Z";
+      dispCurrentLetters(yCursor); 
+    }
+    
+  }
+  else{
+    if (x > 125 && x < 155 && y < 23){
+      char_string += "a";
+      dispCurrentLetters(yCursor); 
+    }
+    else if (x > 125 && x < 155 && y >= 23 && y < 40){
+      char_string += "b";
+      dispCurrentLetters(yCursor); 
+    }
+    else if (x > 125 && x < 155 && y >= 40 && y < 57){
+      char_string += "c";
+      dispCurrentLetters(yCursor); 
+    }
+    else if (x > 125 && x < 155 && y >= 57 && y < 77){
+      char_string += "d";
+      dispCurrentLetters(yCursor); 
+    }
+    else if (x > 125 && x < 155 && y >= 77 && y < 97){
+      char_string += "e";
+      dispCurrentLetters(yCursor); 
+    }
+    else if (x > 125 && x < 155 && y >= 97 && y < 123){
+      char_string += "f";
+      dispCurrentLetters(yCursor); 
+    }
+    else if (x > 125 && x < 155 && y >= 123 && y < 145){
+      char_string += "g";
+      dispCurrentLetters(yCursor); 
+    }
+    else if (x > 125 && x < 155 && y >= 145 && y < 165){
+      char_string += "h";
+      dispCurrentLetters(yCursor); 
+    }
+    else if (x > 125 && x < 155 && y >= 165 && y < 187){
+      char_string += "i";
+      dispCurrentLetters(yCursor); 
+    }
+    else if (x > 125 && x < 155 && y >= 187 && y < 205){
+      char_string += "j";
+      dispCurrentLetters(yCursor); 
+    }
+    else if (x > 125 && x < 155 && y >= 205){
+      char_string += "k";
+      dispCurrentLetters(yCursor); 
+    }
+    else if (x > 85 && x < 125 && y < 23){
+      char_string += "l";
+      dispCurrentLetters(yCursor); 
+    }
+    else if (x > 85 && x < 125 && y >= 23 && y < 40){
+      char_string += "m";
+      dispCurrentLetters(yCursor); 
+    }
+    else if (x > 85 && x < 125 && y >= 40 && y < 57){
+      char_string += "n";
+      dispCurrentLetters(yCursor); 
+    }
+    else if (x > 85 && x < 125 && y >= 57 && y < 77){
+      char_string += "o";
+      dispCurrentLetters(yCursor); 
+    }
+    else if (x > 85 && x < 125 && y >= 77 && y < 97){
+      char_string += "p";
+      dispCurrentLetters(yCursor); 
+    }
+    else if (x > 85 && x < 125 && y >= 97 && y < 123){
+      char_string += "q";
+      dispCurrentLetters(yCursor); 
+    }
+    else if (x > 85 && x < 125 && y >= 123 && y < 145){
+      char_string += "r";
+      dispCurrentLetters(yCursor); 
+    }
+    else if (x > 85 && x < 125 && y >= 145 && y < 165){
+      char_string += "s";
+      dispCurrentLetters(yCursor); 
+    }
+    else if (x > 85 && x < 125 && y >= 165 && y < 187){
+      char_string += "t";
+      dispCurrentLetters(yCursor); 
+    }
+    else if (x > 85 && x < 125 && y >= 187 && y < 205){
+      char_string += "u";
+      dispCurrentLetters(yCursor); 
+    }
+    else if (x > 85 && x < 125 && y >= 205){
+      char_string += "v";
+      dispCurrentLetters(yCursor); 
+    }
+    else if (x > 50 && x < 85 && y < 23){
+      char_string += "w";
+      dispCurrentLetters(yCursor); 
+    }
+    else if (x > 50 && x < 85 && y >= 23 && y < 40){
+      char_string += "x";
+      dispCurrentLetters(yCursor); 
+    }
+    else if (x > 50 && x < 85 && y >= 40 && y < 57){
+      char_string += "y";
+      dispCurrentLetters(yCursor); 
+    }
+    else if (x > 50 && x < 85 && y >= 57 && y < 77){
+      char_string += "z";
+      dispCurrentLetters(yCursor); 
+    }
+  }
+  
 }
 
 
