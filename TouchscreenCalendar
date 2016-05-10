@@ -102,8 +102,8 @@ void setup() {
 
   tft.setRotation(1);
 
-  tft.fillRect(103, 80, 55, 20, ILI9341_BLACK);
-  tft.drawRect(103, 80, 55, 20, ILI9341_WHITE);
+  tft.fillRect(0, 80, 48, 20, ILI9341_BLACK);
+  tft.drawRect(0, 80, 48, 20, ILI9341_WHITE);
   tft.fillRect(268, 80, 55, 20, ILI9341_BLACK);
   tft.drawRect(268, 80, 55, 20, ILI9341_WHITE);
   tft.fillRect(213, 80, 55, 20, ILI9341_BLACK);
@@ -121,7 +121,7 @@ void setup() {
   tft.println("Display");
   tft.setCursor(55, 90);
   tft.println("Mode");
-  tft.setCursor(110, 85);
+  tft.setCursor(5, 85);
   tft.println("Origin");
   tft.setCursor(165, 85);
   tft.println("Name");
@@ -130,9 +130,10 @@ void setup() {
   tft.setCursor(275, 85);
   tft.println("Time");
   tft.setCursor(0,0);
-  tft.setTextSize(2);
-  tft.println("Enter Origin, Name, Location and Time of Event. Touch 'Origin' to start.");
+  tft.setTextSize(1);
+  tft.println("To log an event, touch Name to start. \nTo set current location for directions, touch Origin.");
   tft.setCursor(297,190);
+  tft.setTextSize(2);
   tft.println(":");
   tft.setCursor(0,0);
   }
@@ -204,63 +205,62 @@ void loop() {
   if (add_event_mode){
 
   //when user pushes the "Origin" button
-  if (p.x > 190 && p.x < 230 && p.y > 70 && p.y < 110){
-    displayClearer("Enter Origin, Name, Location and Time of Event. Touch 'Origin' to start.");
-    tft.fillRect(103, 80, 55, 20, ILI9341_GREEN);
+  if (p.x > 190 && p.x < 230 && p.y < 30){
+    origin_touched = true;  
+    tft.fillScreen(ILI9341_BLUE);
+    tft.fillRect(268, 0, 55, 25, ILI9341_BLACK);
+    tft.drawRect(268, 0, 55, 25, ILI9341_WHITE);
+    tft.setCursor(275, 5);
     tft.setTextSize(1);
-    tft.setCursor(110, 85);
+    tft.println("Add");
+    tft.setCursor(275, 15);
+    tft.println("Event");
+    tft.fillRect(268, 25, 55, 25, ILI9341_RED);
+    tft.drawRect(268, 25, 55, 25, ILI9341_WHITE);
+    tft.setCursor(275, 30);
+    tft.println("Set");
+    tft.setCursor(275, 40);
     tft.println("Origin");
-    origin_touched = true;
-    
+    tft.setRotation(0);
+    bmpDraw("keyfour.bmp", 0, 0);
+    tft.fillRect(0, 0, 28, 90, ILI9341_BLUE);
+    tft.setRotation(1);
+    tft.setCursor(50, 20);
+    tft.setTextSize(2);
   }
 
   if (origin_touched){
     getletters(p.x, p.y);
-  }
-
-  //when the user pushes the "Name" button
-  if (origin_touched){
-    if (p.x > 190 && p.x < 230 && p.y > 110 && p.y < 150){
-      tft.fillRect(103, 80, 55, 20, ILI9341_BLACK);
-      tft.drawRect(103, 80, 55, 20, ILI9341_WHITE);
-      tft.setTextSize(1);
-      tft.setCursor(110,85);
-      tft.println("Origin");
-      tft.fillRect(158, 80, 55, 20, ILI9341_GREEN);
-      tft.setCursor(165, 85);
-      tft.println("Name");
-      Serial.println(old_event);
-      displayClearer(old_event);
-      tft.println("Your origin is: ");
-      tft.println(event_info);
-      delay(3000);
-      while(!ts.bufferEmpty()){
-         ts.getPoint();
-         }
-      tft.setTextColor(ILI9341_BLUE);
-      tft.setTextSize(2);
-      tft.setCursor(0,0);
-      tft.println("Your origin is: ");
-      tft.println(event_info);
-      tft.setTextColor(ILI9341_WHITE);
-      tft.setTextSize(2);
-      tft.setCursor(0,0);
-      tft.println("Origin Recorded. Name?");
-      delay(3000);
-      while(!ts.bufferEmpty()){
-         ts.getPoint();
-         }
-      displayClearer("Origin Recorded. Name?");
-      old_event = event_info;
+    if (p.x > 255 && p.x < 285 && p.y > 190 && p.y < 245){
+      origin = "";
       origin += event_info;
       event_info = "";
+      displayClearer(origin, 2);
+      tft.setTextSize(1);
+      tft.println("Your origin has been recorded");
+      tft.println(origin);
+      Serial.print("Origin");
       Serial.println(origin);
-      name_touched = true;
     }
   }
 
+
+  //when the user pushes the "Name" button
+    if (p.x > 190 && p.x < 230 && p.y > 110 && p.y < 150){
+      displayClearer("To log an event, touch Name to start. \nTo set current location for directions, touch Origin.", 1);
+      tft.fillRect(158, 80, 55, 20, ILI9341_GREEN);
+      tft.setTextSize(1);
+      tft.setCursor(165, 85);
+      tft.println("Name");
+      name_touched = true;
+    }
+
+    if (name_touched){
+      getletters(p.x, p.y);
+    }
+
   //when user pushes the "Location" button
-  if (origin_touched && name_touched){
+  if (name_touched){
     if (p.x > 190 && p.x < 230 && p.y > 150 && p.y < 190){
         tft.fillRect(158, 80, 55, 20, ILI9341_BLACK);
         tft.drawRect(158, 80, 55, 20, ILI9341_WHITE);
@@ -271,7 +271,7 @@ void loop() {
         tft.setCursor(218, 85);
         tft.println("Location");
         Serial.println(old_event);
-        displayClearer(old_event);
+        displayClearer(old_event, 2);
         tft.println("Your event name is: ");
         tft.println(event_info);
         delay(3000);
@@ -291,7 +291,7 @@ void loop() {
         while(!ts.bufferEmpty()){
             ts.getPoint();
           }
-        displayClearer("Name recorded. Location?");
+        displayClearer("Name recorded. Location?", 2);
         old_event = event_info;
         event_name += event_info;
         event_info = "";
@@ -301,7 +301,7 @@ void loop() {
     }
 
   //when user pushes the "Time" Button
-  if (origin_touched && name_touched && location_touched){
+  if (name_touched && location_touched){
     if (p.x > 190 && p.x < 230 && p.y > 190 && p.y < 245){
       tft.fillRect(213, 80, 55, 20, ILI9341_BLACK);
       tft.drawRect(213, 80, 55, 20, ILI9341_WHITE);
@@ -312,7 +312,7 @@ void loop() {
       tft.setCursor(275, 85);
       tft.println("Time");
       Serial.println(old_event);
-      displayClearer(old_event);
+      displayClearer(old_event, 2);
       tft.println("Your event location is: ");
       tft.println(event_info);
       delay(3000);
@@ -332,7 +332,7 @@ void loop() {
       while(!ts.bufferEmpty()){
           ts.getPoint();
         }
-      displayClearer("Location recorded. Date and Time? (YYYY-MM-DD hh:mm:ss)");
+      displayClearer("Location recorded. Date and Time? (YYYY-MM-DD hh:mm:ss)", 2);
       old_event = event_info;
       event_location += event_info;
       event_info = "";
@@ -343,7 +343,7 @@ void loop() {
   
   
   //when user pushes the "Record Event" button
-  if (origin_touched && name_touched && location_touched && time_touched){
+  if (name_touched && location_touched && time_touched){
     if (p.x < 50 && p.y < 65){
       tft.fillRect(268, 80, 55, 20, ILI9341_BLACK);
       tft.drawRect(268, 80, 55, 20, ILI9341_WHITE);
@@ -351,7 +351,7 @@ void loop() {
       tft.setTextSize(1);
       tft.println("Time");
       Serial.println(old_event);
-      displayClearer(old_event);
+      displayClearer(old_event, 2);
       tft.println("Your event time is: ");
       tft.println(event_info);
       delay(3000);
@@ -371,7 +371,7 @@ void loop() {
       while(!ts.bufferEmpty()){
             ts.getPoint();
           }
-      displayClearer("Date and Time recorded");
+      displayClearer("Date and Time recorded", 2);
       old_event = event_info;
       event_time += event_info;
       event_info = "";
@@ -449,7 +449,8 @@ void loop() {
     display_mode = true;
   }
     //the user goes back to add event mode
-    if (p.x > 290 && p.y > 190 && p.y < 245){
+    if (p.x > 285 && p.y > 190 && p.y < 245){
+      origin_touched = false;
       add_event_mode = true;
       display_mode = false;
       tft.fillScreen(ILI9341_BLUE);
@@ -462,8 +463,8 @@ void loop() {
       
       tft.fillRect(268, 0, 55, 25, ILI9341_BLUE);
       tft.drawRect(268, 0, 55, 25, ILI9341_BLUE);
-      tft.fillRect(103, 80, 55, 20, ILI9341_BLACK);
-      tft.drawRect(103, 80, 55, 20, ILI9341_WHITE);
+      tft.fillRect(0, 80, 48, 20, ILI9341_BLACK);
+      tft.drawRect(0, 80, 48, 20, ILI9341_WHITE);
       tft.fillRect(158, 80, 55, 20, ILI9341_BLACK);
       tft.drawRect(158, 80, 55, 20, ILI9341_WHITE);
       tft.fillRect(213, 80, 55, 20, ILI9341_BLACK);
@@ -481,7 +482,7 @@ void loop() {
       tft.println("Display");
       tft.setCursor(55, 90);
       tft.println("Mode");
-      tft.setCursor(110, 85);
+      tft.setCursor(5, 85);
       tft.println("Origin");
       tft.setCursor(165, 85);
       tft.println("Name");
@@ -490,9 +491,10 @@ void loop() {
       tft.setCursor(275, 85);
       tft.println("Time");
       tft.setCursor(0,0);
-      tft.setTextSize(2);
-      tft.println("Enter Name, Location and Time of Event. Touch 'Name' to start.");
+      tft.setTextSize(1);
+      tft.println("To log an event, touch Name to start. \nTo set current location for directions, touch Origin.");
       tft.setCursor(297,190);
+      tft.setTextSize(2);
       tft.println(":");
       tft.setCursor(0,0);
     }
@@ -514,8 +516,9 @@ void loop() {
       String domain = "iesc-s2.mit.edu";
       int port = 80;
       String path = "/student_code/" + KERBEROS + "/dev1/sb2.py";
+      String getParams = "origin="+origin;
       
-      wifi.sendRequest(GET, domain, port, path, true);
+      wifi.sendRequest(GET, domain, port, path, getParams, true);
       tLastIotReq = millis();
 
       unsigned long t = millis();
@@ -735,9 +738,9 @@ void dispCurrentLetters(){
     old_event = event_info; 
 }
 
-void displayClearer(String old_text){
+void displayClearer(String old_text, int text_size){
   tft.setTextColor(ILI9341_BLUE);
-  tft.setTextSize(2);
+  tft.setTextSize(text_size);
   tft.setCursor(0,0);
   tft.println(old_text);
   tft.setTextColor(ILI9341_WHITE);
