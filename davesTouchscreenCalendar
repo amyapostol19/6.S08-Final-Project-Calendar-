@@ -352,110 +352,112 @@ void loop() {
     }
 
   //when user pushes the "Location" button
-  if (p.x > 190 && p.x < 230 && p.y > 150 && p.y < 190){
-      displayClearer("Enter event name:", 2);
-      event_name += char_string; 
-      old_string = char_string;
-      char_string = "";
-      //re-drawing buttons
-      tft.fillRect(158, 80, 55, 20, ILI9341_BLACK);
-      tft.drawRect(158, 80, 55, 20, ILI9341_WHITE);
-      tft.setTextSize(1);
-      tft.setCursor(165, 85);
-      tft.println("Name");
-      tft.fillRect(213, 80, 55, 20, ILI9341_DARKGREEN);
-      tft.drawRect(213, 80, 55, 20, ILI9341_WHITE);
-      tft.setCursor(218, 85);
-      tft.println("Location");
-      delay(150);
-      while(!ts.bufferEmpty()){
-      ts.getPoint();
-      }
-      tft.fillRect(213, 80, 55, 20, ILI9341_GREEN);
-      tft.drawRect(213, 80, 55, 20, ILI9341_WHITE);
-      tft.setCursor(218, 85);
-      tft.println("Location");
-
-      //displaying name confirmation, 3sec delay
-      tft.setCursor(0,0);
-      tft.setTextSize(2);
-      tft.println("Your event name is: ");
-      delay(3000);
-      while(!ts.bufferEmpty()){
-          ts.getPoint();
-      }
-      
-      //clearing name confirmation
-      tft.setTextColor(ILI9341_BLUE);
-      tft.setTextSize(2);
-      tft.setCursor(0,0);
-      tft.println("Your event name is: ");
-      dispCurrentLetters(18);
-      
-      //displaying new query for event location
-      tft.setTextColor(ILI9341_WHITE);
-      tft.setTextSize(2);
-      tft.setCursor(0,0);
-      tft.println("Enter a location:");
+  if (name_touched) {
+    if (p.x > 190 && p.x < 230 && p.y > 150 && p.y < 190){
+        displayClearer("Enter event name:", 2);
+        event_name += char_string; 
+        old_string = char_string;
+        char_string = "";
+        //re-drawing buttons
+        tft.fillRect(158, 80, 55, 20, ILI9341_BLACK);
+        tft.drawRect(158, 80, 55, 20, ILI9341_WHITE);
+        tft.setTextSize(1);
+        tft.setCursor(165, 85);
+        tft.println("Name");
+        tft.fillRect(213, 80, 55, 20, ILI9341_DARKGREEN);
+        tft.drawRect(213, 80, 55, 20, ILI9341_WHITE);
+        tft.setCursor(218, 85);
+        tft.println("Location");
+        delay(150);
+        while(!ts.bufferEmpty()){
+        ts.getPoint();
+        }
+        tft.fillRect(213, 80, 55, 20, ILI9341_GREEN);
+        tft.drawRect(213, 80, 55, 20, ILI9341_WHITE);
+        tft.setCursor(218, 85);
+        tft.println("Location");
   
-      location_touched = true;
-  }
+        //displaying name confirmation, 3sec delay
+        tft.setCursor(0,0);
+        tft.setTextSize(2);
+        tft.println("Your event name is: ");
+        delay(3000);
+        while(!ts.bufferEmpty()){
+            ts.getPoint();
+        }
+        
+        //clearing name confirmation
+        tft.setTextColor(ILI9341_BLUE);
+        tft.setTextSize(2);
+        tft.setCursor(0,0);
+        tft.println("Your event name is: ");
+        dispCurrentLetters(18);
+        
+        //displaying new query for event location
+        tft.setTextColor(ILI9341_WHITE);
+        tft.setTextSize(2);
+        tft.setCursor(0,0);
+        tft.println("Enter a location:");
     
+        location_touched = true;
+    }
+  }
   
   
 
   //when user pushes the "Time" Button
-  if (p.x > 190 && p.x < 230 && p.y > 190 && p.y < 245){
-    //clearing previous query for location
-    displayClearer("Enter a location:", 2);
-    event_location += char_string;
-    old_string = char_string;
-    char_string = "";
-    
-    //re-drawing buttons
-    tft.fillRect(213, 80, 55, 20, ILI9341_BLACK);
-    tft.drawRect(213, 80, 55, 20, ILI9341_WHITE);
-    tft.setTextSize(1);
-    tft.setCursor(218, 85);
-    tft.println("Location");
-    tft.fillRect(268, 80, 55, 20, ILI9341_DARKGREEN);
-    tft.drawRect(268, 80, 55, 20, ILI9341_WHITE);
-    tft.setCursor(275, 85);
-    tft.println("Time");
-    delay(150);
-    while(!ts.bufferEmpty()){
-      ts.getPoint();
-     }
-    tft.fillRect(268, 80, 55, 20, ILI9341_GREEN);
-    tft.drawRect(268, 80, 55, 20, ILI9341_WHITE);
-    tft.setCursor(275, 85);
-    tft.println("Time");
-
-    //displaying location confirmation, 3sec delay
-    tft.setCursor(0,0);
-    tft.setTextSize(2);
-    tft.println("Your event location is: ");
-    delay(3000);
-    while(!ts.bufferEmpty()){
-          ts.getPoint();
-        }
-    //clearing location confirmation
-    tft.setTextColor(ILI9341_BLUE);
-    tft.setTextSize(2);
-    tft.setCursor(0,0);
-    tft.println("Your event location is: ");
-    dispCurrentLetters(18);
-    
-    //displaying new query for event time
-    tft.setTextColor(ILI9341_WHITE);
-    tft.setTextSize(2);
-    tft.setCursor(0,0);
-    tft.println("Enter a date & time.\n(YYYY-MM-DD hh:mm:ss)");
-    
-    time_touched = true;
-    
-  }
+  if (name_touched && location_touched){
+    if (p.x > 190 && p.x < 230 && p.y > 190 && p.y < 245){
+      //clearing previous query for location
+      displayClearer("Enter a location:", 2);
+      event_location += char_string;
+      old_string = char_string;
+      char_string = "";
+      
+      //re-drawing buttons
+      tft.fillRect(213, 80, 55, 20, ILI9341_BLACK);
+      tft.drawRect(213, 80, 55, 20, ILI9341_WHITE);
+      tft.setTextSize(1);
+      tft.setCursor(218, 85);
+      tft.println("Location");
+      tft.fillRect(268, 80, 55, 20, ILI9341_DARKGREEN);
+      tft.drawRect(268, 80, 55, 20, ILI9341_WHITE);
+      tft.setCursor(275, 85);
+      tft.println("Time");
+      delay(150);
+      while(!ts.bufferEmpty()){
+        ts.getPoint();
+       }
+      tft.fillRect(268, 80, 55, 20, ILI9341_GREEN);
+      tft.drawRect(268, 80, 55, 20, ILI9341_WHITE);
+      tft.setCursor(275, 85);
+      tft.println("Time");
   
+      //displaying location confirmation, 3sec delay
+      tft.setCursor(0,0);
+      tft.setTextSize(2);
+      tft.println("Your event location is: ");
+      delay(3000);
+      while(!ts.bufferEmpty()){
+            ts.getPoint();
+          }
+      //clearing location confirmation
+      tft.setTextColor(ILI9341_BLUE);
+      tft.setTextSize(2);
+      tft.setCursor(0,0);
+      tft.println("Your event location is: ");
+      dispCurrentLetters(18);
+      
+      //displaying new query for event time
+      tft.setTextColor(ILI9341_WHITE);
+      tft.setTextSize(2);
+      tft.setCursor(0,0);
+      tft.println("Enter a date & time.\n(YYYY-MM-DD hh:mm:ss)");
+      
+      time_touched = true;
+      
+    }
+  }
   
   
   //when user pushes the "Record Event" button
